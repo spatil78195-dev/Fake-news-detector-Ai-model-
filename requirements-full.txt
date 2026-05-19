@@ -1,0 +1,24 @@
+# Full local development — all features (URL, image, voice, scheduler, DB)
+-r requirements.txt
+
+pandas>=1.5
+gunicorn>=20.1
+apscheduler>=3.10
+pymongo>=4.5
+newsapi-python>=0.2.7
+
+# URL (newspaper3k optional; BeautifulSoup fallback always available)
+newspaper3k
+lxml
+
+# Image forensics
+Pillow
+imagehash
+opencv-python-headless
+
+# Voice
+SpeechRecognition
+pydub
+
+# Translation
+deep-translator

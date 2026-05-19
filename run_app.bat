@@ -15,31 +15,8 @@ echo.
 
 REM ── Step 2: Install ALL required packages ─────────────────────────────────
 echo [2/5] Installing required packages (this may take a few minutes)...
-call venv\Scripts\pip install --quiet ^
-    flask ^
-    pandas ^
-    numpy ^
-    scikit-learn ^
-    nltk ^
-    python-dotenv ^
-    apscheduler ^
-    pymongo ^
-    newsapi-python ^
-    Pillow ^
-    requests ^
-    beautifulsoup4 ^
-    lxml ^
-    langdetect ^
-    deep-translator ^
-    SpeechRecognition
-echo       Core packages installed.
-
-REM ── Optional packages (ignore errors if they fail) ────────────────────────
-call venv\Scripts\pip install --quiet newspaper3k 2>nul
-call venv\Scripts\pip install --quiet imagehash 2>nul
-call venv\Scripts\pip install --quiet opencv-python-headless 2>nul
-call venv\Scripts\pip install --quiet pydub 2>nul
-echo       Optional packages attempted.
+call venv\Scripts\pip install --quiet -r requirements-full.txt
+echo       Packages installed (requirements-full.txt).
 echo.
 
 REM ── Step 3: Download NLTK data ────────────────────────────────────────────

@@ -4,22 +4,13 @@ core/preprocessor.py
 Shared NLP preprocessing — must stay aligned with training pipeline.
 """
 
+from __future__ import annotations
+
+import os
 import re
 
-import nltk
-from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
-nltk.download("stopwords", quiet=True)
-nltk.download("punkt", quiet=True)
-
-_stop_words: set = set(stopwords.words("english"))
-_stop_words -= {
-    "no", "not", "never", "nor", "neither", "without", "against",
-    "but", "however", "although", "though", "yet",
-}
-
-# Discriminative fake-news vocabulary (kept even if stopwords)
 _PRESERVE = {
     "breaking", "exclusive", "shocking", "bombshell", "leaked", "leak",
     "secret", "exposed", "banned", "censored", "urgent", "alert",
@@ -31,25 +22,47 @@ _PRESERVE = {
     "debunked", "factcheck", "truth", "patriot", "patriots",
 }
 
-_stemmer: PorterStemmer = PorterStemmer()
-
 _URL_RE = re.compile(r"http\S+|www\.\S+")
 _NON_ALPHA_RE = re.compile(r"[^a-z\s]")
 _MULTI_SPACE_RE = re.compile(r"\s+")
 
 
-def preprocess(text: str) -> str:
-    """
-    Clean and normalise news text for TF-IDF.
+def _load_stopwords() -> set:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    bundled = os.path.abspath(os.path.join(base_dir, "..", "nltk_data"))
 
-    Steps: lowercase → strip URLs → expand common contractions →
-    remove non-alpha → tokenise → stopword removal (with preserve set) →
-    Porter stem → drop single-char tokens.
-    """
+    if os.path.isdir(bundled):
+        import nltk
+        nltk.data.path.insert(0, bundled)
+        from nltk.corpus import stopwords
+        words = set(stopwords.words("english"))
+    else:
+        try:
+            import nltk
+            nltk.download("stopwords", quiet=True)
+            from nltk.corpus import stopwords
+            words = set(stopwords.words("english"))
+        except Exception:
+            from core.nlp_lite import get_stopwords
+            words = get_stopwords()
+            return words
+
+    words -= {
+        "no", "not", "never", "nor", "neither", "without", "against",
+        "but", "however", "although", "though", "yet",
+    }
+    return words
+
+
+_stop_words = _load_stopwords()
+_stemmer = PorterStemmer()
+
+
+def preprocess(text: str) -> str:
+    """Clean and normalise news text for TF-IDF."""
     text = str(text).lower().strip()
     text = _URL_RE.sub(" ", text)
 
-    # Normalise contractions before stripping punctuation
     contractions = {
         "won't": "will not",
         "can't": "cannot",

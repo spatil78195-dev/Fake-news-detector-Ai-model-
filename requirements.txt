@@ -1,32 +1,18 @@
-# ── Core ─────────────────────────────────────────────────────────────────────
-flask>=2.3
-pandas>=1.5
-numpy>=1.24
-scikit-learn>=1.2
-nltk>=3.8
-gunicorn>=20.1
+# Vercel / serverless — minimal runtime (~120–180 MB installed)
+# Local full stack: pip install -r requirements-full.txt
 
-# ── Self-Learning System ──────────────────────────────────────────────────────
-apscheduler>=3.10          # background scheduler (daily fetch + weekly retrain)
-pymongo>=4.5               # MongoDB persistence
-python-dotenv>=1.0         # .env file support
-newsapi-python>=0.2.7      # NewsAPI client
+flask==3.0.3
+python-dotenv==1.0.1
+nltk==3.8.1
+numpy==1.26.4
+scipy==1.11.4
+scikit-learn==1.4.2
+joblib==1.3.2
+threadpoolctl==3.5.0
 
-# ── Feature: URL checking ─────────────────────────────────────────────────────
-newspaper3k
-beautifulsoup4
-lxml
-requests
+# Lightweight URL extraction (no newspaper3k)
+requests==2.32.3
+beautifulsoup4==4.12.3
 
-# ── Feature: Image analysis ───────────────────────────────────────────────────
-Pillow
-imagehash
-opencv-python-headless
-
-# ── Feature: Voice detection ──────────────────────────────────────────────────
-SpeechRecognition
-pydub
-
-# ── Feature: Multi-language ───────────────────────────────────────────────────
-langdetect
-deep-translator
+# Optional: language detection only (translation disabled without deep-translator)
+langdetect==1.0.9

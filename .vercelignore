@@ -1,0 +1,54 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Training data (model is pre-trained; CSVs not needed at runtime)
+dataset/
+*.csv
+
+# Logs and local artifacts
+logs/
+*.log
+
+# Versioned model archives (keep root model.pkl / vectorizer.pkl / model_meta.pkl)
+models/model_*.pkl
+models/vectorizer_*.pkl
+models/*_meta.pkl
+
+# Training / scheduler (not used on serverless)
+train_model.py
+generate_dataset.py
+scheduler/
+
+# Local dev scripts
+*.bat
+START_HERE.bat
+run_app.bat
+_reorder*.py
+_test*.py
+_verify*.py
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+
+# Secrets (set in Vercel dashboard)
+.env
+.env.local
+.env.*.local
+
+# Git / IDE
+.git/
+.cursor/
+agent-transcripts/
+
+# Full local dependency list (Vercel uses requirements.txt)
+requirements-full.txt
+
+# Heavy optional stacks excluded from deploy
+# (url/image/voice use lightweight fallbacks when imports fail)
