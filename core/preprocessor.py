@@ -1,15 +1,31 @@
 """
 core/preprocessor.py
 --------------------
-Shared NLP preprocessing — must stay aligned with training pipeline.
+Shared NLP preprocessing pipeline used by the prediction API and retraining
+scheduler.  MUST stay in sync with train_model.py's preprocess() function.
+
+Improvements over v1:
+  - Negation words (no, not, never …) are kept — they are discriminative
+  - Fake-news indicator words (sheeple, globalist, bombshell …) preserved
+    before stemming so the heuristic layer can also see them
+  - Single-character tokens dropped after stemming
 """
 
-from __future__ import annotations
-
-import os
 import re
 
+import nltk
+from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
+
+nltk.download("stopwords", quiet=True)
+nltk.download("punkt",     quiet=True)
+
+_stop_words: set = set(stopwords.words("english"))
+
+_stop_words -= {
+    "no", "not", "never", "nor", "neither", "without", "against",
+    "but", "however", "although", "though", "yet",
+}
 
 _PRESERVE = {
     "breaking", "exclusive", "shocking", "bombshell", "leaked", "leak",
@@ -22,44 +38,28 @@ _PRESERVE = {
     "debunked", "factcheck", "truth", "patriot", "patriots",
 }
 
+_stemmer: PorterStemmer = PorterStemmer()
+
 _URL_RE = re.compile(r"http\S+|www\.\S+")
 _NON_ALPHA_RE = re.compile(r"[^a-z\s]")
 _MULTI_SPACE_RE = re.compile(r"\s+")
 
 
-def _load_stopwords() -> set:
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    bundled = os.path.abspath(os.path.join(base_dir, "..", "nltk_data"))
-
-    if os.path.isdir(bundled):
-        import nltk
-        nltk.data.path.insert(0, bundled)
-        from nltk.corpus import stopwords
-        words = set(stopwords.words("english"))
-    else:
-        try:
-            import nltk
-            nltk.download("stopwords", quiet=True)
-            from nltk.corpus import stopwords
-            words = set(stopwords.words("english"))
-        except Exception:
-            from core.nlp_lite import get_stopwords
-            words = get_stopwords()
-            return words
-
-    words -= {
-        "no", "not", "never", "nor", "neither", "without", "against",
-        "but", "however", "although", "though", "yet",
-    }
-    return words
-
-
-_stop_words = _load_stopwords()
-_stemmer = PorterStemmer()
-
-
 def preprocess(text: str) -> str:
-    """Clean and normalise news text for TF-IDF."""
+    """
+    Full NLP preprocessing pipeline (v2).
+
+    Steps
+    -----
+    1. Lowercase
+    2. Strip URLs
+    3. Remove non-alpha characters
+    4. Tokenise on whitespace
+    5. Remove stop-words (keeping negations + indicator words)
+    6. Porter-stem each token
+    7. Drop single-character tokens
+    8. Re-join and return
+    """
     text = str(text).lower().strip()
     text = _URL_RE.sub(" ", text)
 

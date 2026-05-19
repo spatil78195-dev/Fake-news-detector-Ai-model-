@@ -56,9 +56,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Vercel serverless: no background scheduler / retrain
-IS_VERCEL = os.getenv("VERCEL") == "1" or bool(os.getenv("VERCEL_ENV"))
-
 # ── Feature modules (graceful — missing deps won't crash the app) ─────────────
 try:
     from features.url_checker import extract_article, source_credibility
@@ -113,40 +110,22 @@ except Exception as _e:
     def get_model_versions(limit=20): return []
     def get_training_runs(limit=10): return []
 
-# ── Scheduler jobs (disabled on Vercel — no long-running background tasks) ───
-NEWS_FETCHER_OK = False
-RETRAINER_OK = False
+# ── Scheduler jobs ────────────────────────────────────────────────────────────
+try:
+    from scheduler.news_fetcher import fetch_and_store
+    NEWS_FETCHER_OK = True
+except Exception as _e:
+    NEWS_FETCHER_OK = False
+    logger.warning("[App] News fetcher unavailable: %s", _e)
+    def fetch_and_store(): return 0
 
-
-def fetch_and_store() -> int:
-    return 0
-
-
-def retrain_model() -> dict:
-    return {
-        "success": False,
-        "message": "Retraining is not available on serverless hosting. Run locally or use Render.",
-    }
-
-
-if not IS_VERCEL:
-    try:
-        from scheduler.news_fetcher import fetch_and_store as _fetch_and_store
-        fetch_and_store = _fetch_and_store
-        NEWS_FETCHER_OK = True
-        logger.info("[App] News fetcher loaded.")
-    except Exception as _e:
-        logger.warning("[App] News fetcher unavailable: %s", _e)
-
-    try:
-        from scheduler.retrainer import retrain_model as _retrain_model
-        retrain_model = _retrain_model
-        RETRAINER_OK = True
-        logger.info("[App] Retrainer loaded.")
-    except Exception as _e:
-        logger.warning("[App] Retrainer unavailable: %s", _e)
-else:
-    logger.info("[App] Vercel mode — scheduler and retrain disabled.")
+try:
+    from scheduler.retrainer import retrain_model
+    RETRAINER_OK = True
+except Exception as _e:
+    RETRAINER_OK = False
+    logger.warning("[App] Retrainer unavailable: %s", _e)
+    def retrain_model(): return {"success": False, "message": "Retrainer not available."}
 
 # ── Config ────────────────────────────────────────────────────────────────────
 ADMIN_PASSWORD        = os.getenv("ADMIN_PASSWORD", "admin123")
@@ -172,9 +151,6 @@ def _start_scheduler() -> None:
       2. Weekly model retrain (every RETRAIN_DAY_OF_WEEK at RETRAIN_HOUR UTC)
     """
     global _scheduler
-    if IS_VERCEL:
-        logger.info("[Scheduler] Skipped — not supported on Vercel serverless.")
-        return
     if not NEWS_FETCHER_OK or not RETRAINER_OK:
         logger.warning("[Scheduler] Scheduler jobs skipped — fetcher/retrainer unavailable.")
         return
@@ -353,7 +329,6 @@ def health():
         "is_training":  info.get("is_training", False),
         "version_id":   info.get("version_id"),
         "accuracy":     info.get("accuracy"),
-        "platform":     "vercel" if IS_VERCEL else "standard",
         "features": {
             "url_checker":   URL_CHECKER_OK,
             "image_checker": IMAGE_CHECKER_OK,
