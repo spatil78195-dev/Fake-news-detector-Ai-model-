@@ -1,0 +1,32 @@
+# ── Core ─────────────────────────────────────────────────────────────────────
+flask>=2.3
+pandas>=1.5
+numpy>=1.24
+scikit-learn>=1.2
+nltk>=3.8
+gunicorn>=20.1
+
+# ── Self-Learning System ──────────────────────────────────────────────────────
+apscheduler>=3.10          # background scheduler (daily fetch + weekly retrain)
+pymongo>=4.5               # MongoDB persistence
+python-dotenv>=1.0         # .env file support
+newsapi-python>=0.2.7      # NewsAPI client
+
+# ── Feature: URL checking ─────────────────────────────────────────────────────
+newspaper3k
+beautifulsoup4
+lxml
+requests
+
+# ── Feature: Image analysis ───────────────────────────────────────────────────
+Pillow
+imagehash
+opencv-python-headless
+
+# ── Feature: Voice detection ──────────────────────────────────────────────────
+SpeechRecognition
+pydub
+
+# ── Feature: Multi-language ───────────────────────────────────────────────────
+langdetect
+deep-translator

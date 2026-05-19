@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO Meta -->
+  <title>Fake News Detector — AI-Powered Misinformation Detection</title>
+  <meta name="description"
+        content="AI-powered fake news detector using machine learning. Paste any news article and get an instant verdict — Fake or Real — with confidence scores." />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <!-- jsPDF CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='features.css') }}" />
+</head>
+<body>
+
+  <!-- Animated background orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="wrapper">
+
+    <!-- ══════════════════ NAVIGATION ══════════════════ -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <div class="nav-logo">
+        <div class="logo-icon" aria-hidden="true">🔍</div>
+        FakeGuard AI
+      </div>
+      <span class="nav-badge">ML-Powered · v2.0</span>
+    </nav>
+
+    <!-- ══════════════════ HERO ══════════════════ -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-tag" aria-hidden="true">AI-Powered Detection</div>
+
+      <h1 id="hero-heading">
+        <span id="typing-target">Detect Fake News</span><span class="cursor" aria-hidden="true">|</span>
+      </h1>
+
+      <p>
+        Paste any news article below and our machine learning model will analyze it
+        in seconds — delivering a Fake or Real verdict with confidence scores.
+      </p>
+
+      <!-- Session stats bar -->
+      <div class="stats-bar" role="region" aria-label="Session statistics">
+        <div class="stat-item">
+          <span class="stat-value" id="total-analyzed">0</span>
+          <div class="stat-label">Analyzed</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value stat-fake" id="total-fake">0</span>
+          <div class="stat-label">Fake Found</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value stat-real" id="total-real">0</span>
+          <div class="stat-label">Real Found</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="session-accuracy">—</span>
+          <div class="stat-label">Session Ratio</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ ADVANCED FEATURES ══════════════════ -->
+    <section class="features-section page-intro-section" aria-labelledby="features-heading">
+      <div class="features-section-header">
+        <h2 id="features-heading">Advanced Features</h2>
+        <p>Explore deep-fake detection, source credibility, and multi-language support</p>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="feat-tabs" role="tablist">
+        <button class="feat-tab-btn active" data-tab="url" role="tab">🔗 URL Checker</button>
+        <button class="feat-tab-btn" data-tab="image" role="tab">🖼️ Image Forensics</button>
+        <button class="feat-tab-btn" data-tab="voice" role="tab">🎙️ Voice Analysis</button>
+        <button class="feat-tab-btn" data-tab="lang" role="tab">🌍 Multi-Language</button>
+      </div>
+
+      <div class="glass-card">
+        <!-- Panel 1: URL -->
+        <div id="feat-url" class="feat-panel active" role="tabpanel">
+          <div class="feat-input-group">
+            <label class="feat-label" for="url-input">News Article URL</label>
+            <input type="url" id="url-input" class="feat-url-input" placeholder="https://example.com/news-article..." />
+          </div>
+          <button id="url-analyze-btn" class="btn-primary" style="width:100%">Analyze URL</button>
+          
+          <div id="url-loading" class="feat-loading">
+            <div class="spinner"></div> Extracting & Analyzing...
+          </div>
+          <div id="url-error" class="feat-error"></div>
+          <div id="url-result"></div>
+        </div>
+
+        <!-- Panel 2: Image -->
+        <div id="feat-image" class="feat-panel" role="tabpanel">
+          <div class="feat-label">Upload News Image</div>
+          <div id="img-dropzone" class="feat-upload-zone">
+            <input type="file" id="img-file-input" accept="image/*" />
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-label">Drag & drop an image here or click to browse</div>
+            <div class="upload-hint">Supports JPG, PNG, WEBP (Max 10MB)</div>
+            <div id="img-filename" class="upload-filename"></div>
+          </div>
+          <button id="img-analyze-btn" class="btn-primary" style="width:100%;margin-top:16px">Run Image Forensics</button>
+
+          <img id="img-preview-orig" style="display:none;width:100%;max-height:200px;object-fit:contain;margin-top:16px;border-radius:var(--radius-md)" alt="Preview" />
+
+          <div id="img-loading" class="feat-loading">
+            <div class="spinner"></div> Running ELA & Metadata Analysis...
+          </div>
+          <div id="img-error" class="feat-error"></div>
+          <div id="img-result"></div>
+        </div>
+
+        <!-- Panel 3: Voice -->
+        <div id="feat-voice" class="feat-panel" role="tabpanel">
+          <div class="feat-label">Upload Audio News</div>
+          <div id="voice-dropzone" class="feat-upload-zone">
+            <input type="file" id="voice-file-input" accept="audio/*" />
+            <div class="upload-icon">🎙️</div>
+            <div class="upload-label">Drag & drop an audio file or click to browse</div>
+            <div class="upload-hint">Supports WAV, MP3, OGG (Max 25MB)</div>
+            <div id="voice-filename" class="upload-filename"></div>
+          </div>
+          <button id="voice-analyze-btn" class="btn-primary" style="width:100%;margin-top:16px">Transcribe & Analyze</button>
+
+          <div id="voice-loading" class="feat-loading">
+            <div class="spinner"></div> Transcribing audio...
+          </div>
+          <div id="voice-error" class="feat-error"></div>
+          <div id="voice-result"></div>
+        </div>
+
+        <!-- Panel 4: Language -->
+        <div id="feat-lang" class="feat-panel" role="tabpanel">
+          <div class="feat-input-group">
+            <label class="feat-label" for="lang-input">Non-English News Text (Hindi/Marathi)</label>
+            <textarea id="lang-input" class="feat-text-input" placeholder="Paste Hindi or Marathi news text here..."></textarea>
+          </div>
+          <button id="lang-analyze-btn" class="btn-primary" style="width:100%">Translate & Analyze</button>
+
+          <div id="lang-loading" class="feat-loading">
+            <div class="spinner"></div> Detecting language & Translating...
+          </div>
+          <div id="lang-error" class="feat-error"></div>
+          <div id="lang-result"></div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ══════════════════ HOW IT WORKS ══════════════════ -->
+    <section class="features-section how-it-works-section" aria-labelledby="how-it-works-heading">
+      <div class="features-section-header">
+        <h2 id="how-it-works-heading">How It Works</h2>
+        <p>ML Pipeline — from raw text to Fake or Real verdict</p>
+      </div>
+
+      <div class="glass-card" role="region" aria-label="How the model works">
+        <ol class="how-it-works-steps">
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;flex-shrink:0">1</span>
+            <div>
+              <div style="font-size:0.83rem;font-weight:600;color:var(--text-primary)">Text Preprocessing</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">Lowercase, remove URLs, punctuation &amp; stopwords, then stem</div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;flex-shrink:0">2</span>
+            <div>
+              <div style="font-size:0.83rem;font-weight:600;color:var(--text-primary)">TF-IDF Vectorization</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">Convert text to trigram TF-IDF features</div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;flex-shrink:0">3</span>
+            <div>
+              <div style="font-size:0.83rem;font-weight:600;color:var(--text-primary)">ML Classifier</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">Balanced LinearSVC with calibrated probabilities</div>
+            </div>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;flex-shrink:0">4</span>
+            <div>
+              <div style="font-size:0.83rem;font-weight:600;color:var(--text-primary)">Confidence Score</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">Probability + heuristic pattern signals</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ══════════════════ MAIN GRID ══════════════════ -->
+    <div class="main-grid main-grid--analyzer">
+
+      <!-- ─── LEFT COLUMN: Input + Result ─── -->
+      <div>
+
+        <!-- Input card -->
+        <div class="glass-card" role="main">
+          <div class="card-header">
+            <div class="card-icon" aria-hidden="true">📝</div>
+            <div>
+              <div class="card-title">Paste News Article</div>
+              <div class="card-subtitle">Supports any language — model trained on English news</div>
+            </div>
+          </div>
+
+          <div class="textarea-wrapper">
+            <label for="news-input" class="sr-only">News article text</label>
+            <textarea
+              id="news-input"
+              placeholder="Paste the full news article here…&#10;&#10;Example: 'The Federal Reserve raised interest rates by 25 basis points on Wednesday, citing persistent inflation…'"
+              aria-label="News article text"
+              aria-describedby="char-counter"
+            ></textarea>
+          </div>
+          <div id="char-counter" class="char-counter">0 characters</div>
+
+          <!-- Error message -->
+          <div id="error-msg" class="error-msg" role="alert" aria-live="polite">
+            <span id="error-text"></span>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="btn-row" style="margin-top:16px">
+            <button id="analyze-btn" class="btn-primary" aria-label="Analyze news article">
+              <div id="btn-spinner" class="spinner" role="status" aria-label="Analyzing"></div>
+              <span id="btn-text">🔍 Analyze Article</span>
+            </button>
+            <button id="clear-btn" class="btn-secondary" aria-label="Clear input">✕ Clear</button>
+          </div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
+            Tip: Press <kbd style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;font-size:0.7rem">Ctrl + Enter</kbd> to analyze
+          </div>
+        </div>
+
+        <!-- ─── Result card ─── -->
+        <div id="result-card" class="result-card" role="region" aria-label="Prediction result" aria-live="polite" style="display:none">
+
+          <div class="result-top">
+            <div class="result-badge">
+              <span id="result-emoji" class="result-emoji" aria-hidden="true">🚨</span>
+              <div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px">Verdict</div>
+                <div id="result-label" class="result-label">Fake</div>
+              </div>
+            </div>
+
+            <!-- Confidence ring -->
+            <div class="confidence-ring" data-tooltip="Model confidence">
+              <svg width="80" height="80" viewBox="0 0 80 80" aria-hidden="true">
+                <circle class="ring-bg" cx="40" cy="40" r="34" />
+                <circle id="ring-fill" class="ring-fill" cx="40" cy="40" r="34" />
+              </svg>
+              <div class="ring-text">
+                <span id="ring-pct" class="ring-pct">0%</span>
+                <span class="ring-sub">conf.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Probability bars -->
+          <div class="prob-bars" aria-label="Probability breakdown">
+            <div class="prob-row">
+              <span class="prob-label" style="color:var(--fake-color)">Fake</span>
+              <div class="prob-bar-bg" role="progressbar" aria-label="Fake probability">
+                <div id="fake-prob-bar" class="prob-bar-fill fake"></div>
+              </div>
+              <span id="fake-prob-pct" class="prob-pct" style="color:var(--fake-color)">0%</span>
+            </div>
+            <div class="prob-row">
+              <span class="prob-label" style="color:var(--real-color)">Real</span>
+              <div class="prob-bar-bg" role="progressbar" aria-label="Real probability">
+                <div id="real-prob-bar" class="prob-bar-fill real"></div>
+              </div>
+              <span id="real-prob-pct" class="prob-pct" style="color:var(--real-color)">0%</span>
+            </div>
+          </div>
+
+          <!-- Meta chips -->
+          <div class="result-meta">
+            <span class="meta-chip">📝 <span id="result-word-count">— words</span></span>
+            <span class="meta-chip">🕐 <span id="result-time">—</span></span>
+          </div>
+        </div>
+
+        <!-- Download report button -->
+        <button id="download-btn" class="btn-download hidden" aria-label="Download PDF report">
+          &#8681; Download PDF Report
+        </button>
+
+        <!-- ─── Prediction History ─── -->
+        <section class="history-section" aria-labelledby="history-heading">
+          <div class="section-header">
+            <h2 id="history-heading" class="section-title">📋 Prediction History</h2>
+            <button id="history-clear" class="btn-clear" aria-label="Clear prediction history">Clear</button>
+          </div>
+
+          <div class="glass-card" style="padding:0;overflow:hidden">
+            <div class="history-table-wrapper">
+              <table class="history-table" aria-label="Prediction history">
+                <thead>
+                  <tr>
+                    <th scope="col">Article Snippet</th>
+                    <th scope="col">Verdict</th>
+                    <th scope="col">Confidence</th>
+                    <th scope="col">Time</th>
+                  </tr>
+                </thead>
+                <tbody id="history-body">
+                  <tr>
+                    <td colspan="4" class="history-empty">No predictions yet. Analyze an article above!</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- end left column -->
+
+      <!-- ─── RIGHT SIDEBAR ─── -->
+      <aside class="sidebar" role="complementary" aria-label="Stats and samples">
+
+        <!-- Chart card -->
+        <div class="glass-card" role="region" aria-label="Session statistics chart">
+          <div class="card-header">
+            <div class="card-icon" aria-hidden="true">📊</div>
+            <div>
+              <div class="card-title">Session Stats</div>
+              <div class="card-subtitle">Fake vs Real distribution</div>
+            </div>
+          </div>
+
+          <div class="chart-wrapper">
+            <canvas id="stats-chart" width="200" height="200" aria-label="Doughnut chart of fake vs real predictions"></canvas>
+            <div class="chart-center-label" aria-hidden="true">
+              <span id="chart-center-num" class="big-num">0</span>
+              <span class="small-txt">analyzed</span>
+            </div>
+          </div>
+
+          <div class="chart-legend" aria-label="Chart legend">
+            <div class="legend-dot"><div class="dot fake"></div> Fake</div>
+            <div class="legend-dot"><div class="dot real"></div> Real</div>
+          </div>
+        </div>
+
+        <!-- Sample articles card -->
+        <div class="glass-card" role="region" aria-label="Sample articles">
+          <div class="card-header">
+            <div class="card-icon" aria-hidden="true">📰</div>
+            <div>
+              <div class="card-title">Try a Sample</div>
+              <div class="card-subtitle">Click to auto-fill the input</div>
+            </div>
+          </div>
+
+          <div id="samples-grid" class="samples-grid" role="list">
+            <!-- Loaded dynamically from /api/sample -->
+            <div class="skeleton" style="height:48px;border-radius:12px"></div>
+            <div class="skeleton" style="height:48px;border-radius:12px;margin-top:10px"></div>
+            <div class="skeleton" style="height:48px;border-radius:12px;margin-top:10px"></div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div><!-- end main-grid -->
+
+    <!-- ══════════════════ FOOTER ══════════════════ -->
+    <footer class="footer" role="contentinfo">
+      <p>
+        Built with ❤️ using <strong>Python</strong>, <strong>Flask</strong> &amp; <strong>Scikit-learn</strong> ·
+        Model trained on the <a href="https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset" target="_blank" rel="noopener">ISOT Fake News Dataset</a>
+      </p>
+      <p style="margin-top:6px">⚠ This tool is for educational purposes. Always verify news from multiple trusted sources.</p>
+    </footer>
+
+  </div><!-- end wrapper -->
+
+  <!-- Screen-reader only utility class -->
+  <style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}</style>
+
+  <!-- Main Script -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="{{ url_for('static', filename='features.js') }}"></script>
+</body>
+</html>
