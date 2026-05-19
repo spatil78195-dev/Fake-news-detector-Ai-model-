@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🔍 FakeGuard AI — Fake News Detector
 
 > An AI-powered web application that detects whether a news article is **Fake** or **Real** using Machine Learning and NLP.
@@ -253,3 +254,7 @@ MIT License — Free to use, modify, and distribute.
 ---
 
 *Built with ❤️ using Python, Flask, scikit-learn, Chart.js, and jsPDF*
+=======
+# Fake-news-detector-Ai-model-
+🚀 My first Data Science project — an AI-powered Fake News Detector that analyzes news content and predicts whether the information is real or fake using Machine Learning and NLP techniques.
+>>>>>>> 2bb1fa71374d16226ff1ea29c867c04fafd2bc62
