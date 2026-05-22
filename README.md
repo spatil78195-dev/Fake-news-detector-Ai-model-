@@ -27,9 +27,6 @@ python train_model.py          # if model.pkl is missing
 python app.py
 ```
 
-Or double-click **`run_app.bat`** on Windows.
-
-Open **http://localhost:5000**
 
 ## Deploy on Render
 
